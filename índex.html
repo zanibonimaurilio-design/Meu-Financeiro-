@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#153b32">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Meu Financeiro">
+  <link rel="manifest" href="manifest.json">
+
+  <title>Meu Financeiro</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --verde: #153b32;
+      --verde-claro: #e6f3eb;
+      --fundo: #f4f7f5;
+      --borda: #d9e4dd;
+      --vermelho: #a52d38;
+      --texto: #1d2d25;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--fundo);
+      color: var(--texto);
+      font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      background: var(--verde);
+      color: white;
+      padding: 20px 16px 16px;
+    }
+
+    header h1 { margin: 0 0 5px; font-size: 24px; }
+    header p { margin: 0; opacity: .85; font-size: 14px; }
+
+    nav {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      background: white;
+      padding: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-bottom: 1px solid var(--borda);
+    }
+
+    button, input, select {
+      font: inherit;
+      border-radius: 9px;
+    }
+
+    button {
+      border: 0;
+      background: var(--verde);
+      color: white;
+      padding: 11px 14px;
+      cursor: pointer;
+    }
+
+    nav button {
+      flex: 0 0 auto;
+      background: #edf2ef;
+      color: var(--verde);
+      padding: 9px 12px;
+    }
+
+    nav button.ativo {
+      background: var(--verde);
+      color: white;
+    }
+
+    main { max-width: 960px; margin: auto; padding: 14px; }
+    section { display: none; }
+    section.ativo { display: block; }
+
+    .cartao {
+      background: white;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    h2 { font-size: 21px; margin: 0 0 14px; }
+    h3 { font-size: 17px; margin: 18px 0 10px; }
+    p { line-height: 1.45; }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid #bfcec4;
+      padding: 10px;
+      background: white;
+      color: var(--texto);
+      min-height: 43px;
+    }
+
+    input[type="file"] { padding: 7px; }
+
+    .grade {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    .acoes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .secundario {
+      background: #e8f0eb;
+      color: var(--verde);
+    }
+
+    .perigo {
+      background: #fbe8e9;
+      color: var(--vermelho);
+    }
+
+    .pequeno { font-size: 13px; color: #5a6d61; }
+    .aviso { padding: 10px; background: #fff5d9; border-radius: 9px; }
+    .erro { color: var(--vermelho); font-weight: 600; }
+
+    .resumo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .numero {
+      background: var(--verde-claro);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .numero span { display: block; font-size: 13px; }
+    .numero strong { display: block; margin-top: 5px; font-size: 18px; }
+
+    .item {
+      padding: 11px 0;
+      border-bottom: 1px solid #edf1ee;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .item:last-child { border-bottom: 0; }
+    .item p { margin: 3px 0; }
+    .item button { padding: 8px 10px; font-size: 13px; }
+
+    .barra-linha { margin: 12px 0; }
+    .barra-cabecalho {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .trilho {
+      height: 13px;
+      background: #edf1ee;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+
+    .barra { height: 100%; background: #32815b; border-radius: 8px; }
+    .barra.saida { background: #d26870; }
+
+    .calendario {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      text-align: center;
+    }
+
+    .calendario .dia-semana {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 0;
+    }
+
+    .calendario button {
+      background: #edf4ef;
+      color: var(--texto);
+      padding: 9px 2px;
+      min-height: 40px;
+    }
+
+    .calendario button.tem-evento {
+      background: #bde3ca;
+      font-weight: bold;
+    }
+
+    .calendario button.selecionado {
+      background: var(--verde);
+      color: white;
+    }
+
+    @media (max-width: 420px) {
+      main { padding: 10px; }
+      .cartao { padding: 13px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Meu Financeiro</h1>
+    <p>Seu caixa, compromissos e gastos em um só lugar.</p>
+  </header>
+
+  <nav id="navegacao">
+    <button type="button" data-aba="caixa" class="ativo">Caixa</button>
+    <button type="button" data-aba="relatorios">Relatórios</button>
+    <button type="button" data-aba="fixos">Gastos fixos</button>
+    <button type="button" data-aba="agenda">Calendário</button>
+    <button type="button" data-aba="dados">Backup</button>
+  </nav>
+
+  <main>
+    <section id="caixa" class="ativo">
+      <div class="cartao">
+        <h2>Caixa diário</h2>
+
+        <label for="dataCaixa">Data do caixa</label>
+        <input type="date" id="dataCaixa">
+
+        <div id="situacaoCaixa"></div>
+
+        <form id="formAbrir">
+          <h3>Abrir caixa</h3>
+          <div class="grade">
+            <div>
+              <label for="saldoInicial">Saldo inicial em reais</label>
+              <input id="saldoInicial" type="number" min="0" step="0.01" required>
+            </div>
+            <button type="submit">Abrir caixa</button>
+          </div>
+        </form>
+
+        <form id="formLancamento">
+          <h3>Nova entrada ou saída</h3>
+          <div class="grade">
+            <div>
+              <label for="tipoLancamento">Tipo</label>
+              <select id="tipoLancamento">
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="descricaoLancamento">Descrição</label>
+              <input id="descricaoLancamento" maxlength="100" required
+                placeholder="Ex.: venda ou pagamento">
+            </div>
+
+            <div>
+              <label for="categoriaLancamento">Categoria</label>
+              <input id="categoriaLancamento" maxlength="60" required
+                placeholder="Ex.: vendas ou alimentação">
+            </div>
+
+            <div>
+              <label for="valorLancamento">Valor em reais</label>
+              <input id="valorLancamento" type="number" min="0.01"
+                step="0.01" required>
+            </div>
+
+            <button type="submit">Adicionar</button>
+          </div>
+        </form>
+
+        <form id="formFechar">
+          <h3>Fechar caixa</h3>
+          <p class="pequeno">
+            Informe o valor que você conferiu no fechamento.
+            O aplicativo mostrará a diferença em relação ao saldo esperado.
+          </p>
+          <div class="grade">
+            <div>
+              <label for="saldoConferido">Saldo conferido em reais</label>
+              <input id="saldoConferido" type="number" min="0"
+                step="0.01" required>
+            </div>
+            <button type="submit">Fechar caixa</button>
+          </div>
+        </form>
+
+        <div id="acoesCaixa"></div>
+        <p id="mensagemCaixa" class="erro" role="alert"></p>
+      </div>
+
+      <div class="cartao">
+        <h2>Lançamentos do dia</h2>
+        <div id="listaLancamentos"></div>
+      </div>
+    </section>
+
+    <section id="relatorios">
+      <div class="cartao">
+        <h2>Relatórios do caixa</h2>
+
+        <div class="grade">
+          <div>
+            <label for="periodoRelatorio">Período</label>
+            <select id="periodoRelatorio">
+              <option value="quinzena">Quinzenal</option>
+              <option value="mes" selected>Mensal</option>
+              <option value="ano">Anual</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="dataRelatorio">Data de referência</label>
+            <input type="date" id="dataRelatorio">
+          </div>
+        </div>
+
+        <p id="intervaloRelatorio" class="pequeno"></p>
+        <div id="resumoRelatorio"></div>
+
+        <h3>Entradas e saídas</h3>
+        <div id="graficoFluxo"></div>
+
+        <h3>Saídas por categoria</h3>
+        <div id="graficoCategorias"></div>
+
+        <p class="pequeno">
+          O resultado é a diferença entre entradas e saídas. Saldos de abertura
+          não são considerados entradas.
+        </p>
+      </div>
+    </section>
+
+    <section id="fixos">
+      <div class="cartao">
+        <h2>Gastos fixos e planejamento mensal</h2>
+
+        <form id="formFixo">
+          <div class="grade">
+            <div>
+              <label for="mesFixo">Mês</label>
+              <input type="month" id="mesFixo" required>
+            </div>
+
+            <div>
+              <label for="nomeFixo">Despesa</label>
+              <input id="nomeFixo" maxlength="80" required
+                placeholder="Ex.: aluguel">
+            </div>
+
+            <div>
+              <label for="valorFixo">Valor em reais</label>
+              <input id="valorFixo" type="number" min="0.01"
+                step="0.01" required>
+            </div>
+
+            <button type="submit">Adicionar gasto</button>
+          </div>
+        </form>
+
+        <p class="pequeno">
+          Os gastos são registrados para o mês escolhido. Para alterar um
+          valor, exclua o registro e adicione-o novamente.
+          Eles não são lançados automaticamente no caixa.
+        </p>
+
+        <div id="resumoFixos"></div>
+        <div id="listaFixos"></div>
+
+        <h3>Gráfico das despesas do mês</h3>
+        <div id="graficoFixos"></div>
+      </div>
+    </section>
+
+    <section id="agenda">
+      <div class="cartao">
+        <h2>Calendário e agenda</h2>
+
+        <label for="mesAgenda">Mês do calendário</label>
+        <input type="month" id="mesAgenda">
+
+        <div id="calendario" class="calendario" style="margin-top: 14px"></div>
+        <p class="pequeno">
+          Toque em um dia para selecioná-lo. Os dias com compromissos
+          aparecem destacados.
+        </p>
+      </div>
+
+      <div class="cartao">
+        <h2>Novo compromisso</h2>
+
+        <form id="formCompromisso">
+          <div class="grade">
+            <div>
+              <label for="dataCompromisso">Data</label>
+              <input type="date" id="dataCompromisso" required>
+            </div>
+
+            <div>
+              <label for="horaCompromisso">Horário</label>
+              <input type="time" id="horaCompromisso">
+            </div>
+
+            <div>
+              <label for="tituloCompromisso">Compromisso</label>
+              <input id="tituloCompromisso" maxlength="120" required
+                placeholder="Ex.: consulta">
+            </div>
+
+            <button type="submit">Adicionar</button>
+          </div>
+        </form>
+
+        <h3>Compromissos do mês</h3>
+        <div id="listaCompromissos"></div>
+      </div>
+    </section>
+
+    <section id="dados">
+      <div class="cartao">
+        <h2>Backup dos dados</h2>
+
+        <p>
+          Seus registros ficam no armazenamento local do navegador neste
+          aparelho. Faça backups periodicamente e guarde-os em um local seguro.
+        </p>
+
+        <button id="exportar" type="button">Exportar backup</button>
+
+        <h3>Restaurar backup</h3>
+        <p class="aviso">
+          A restauração substitui todos os dados atuais deste aplicativo.
+        </p>
+
+        <label for="arquivoBackup">Escolha um backup JSON</label>
+        <input type="file" id="arquivoBackup" accept=".json,application/json">
+
+        <div class="acoes">
+          <button id="importar" type="button" class="secundario">
+            Restaurar backup
+          </button>
+        </div>
+
+        <p id="mensagemDados" role="status"></p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const CHAVE = "meu_financeiro_v1";
+    const $ = id => document.getElementById(id);
+
+    const vazio = () => ({
+      versao: 1,
+      caixas: {},
+      lancamentos: [],
+      fixos: [],
+      compromissos: []
+    });
+
+    let dados;
+
+    try {
+      const salvo = localStorage.getItem(CHAVE);
+      dados = salvo ? JSON.parse(salvo) : vazio();
+
+      if (
+        !dados ||
+        dados.versao !== 1 ||
+        typeof dados.caixas !== "object" ||
+        Array.isArray(dados.caixas) ||
+        !Array.isArray(dados.lancamentos) ||
+        !Array.isArray(dados.fixos) ||
+        !Array.isArray(dados.compromissos)
+      ) {
+        throw new Error("Dados inválidos.");
+      }
+    } catch (erro) {
+      alert(
+        "Não foi possível ler os dados salvos. " +
+        "Para evitar sobrescrevê-los, o aplicativo não será iniciado."
+      );
+      throw erro;
+    }
+
+    function salvar() {
+      try {
+        localStorage.setItem(CHAVE, JSON.stringify(dados));
+        return true;
+      } catch (erro) {
+        alert(
+          "Não foi possível salvar os dados neste aparelho. " +
+          "Verifique o armazenamento disponível e tente novamente."
+        );
+        return false;
+      }
+    }
+
+    function alterar(mutacao) {
+      const anterior = JSON.stringify(dados);
+      mutacao();
+
+      if (!salvar()) {
+        dados = JSON.parse(anterior);
+        return false;
+      }
+
+      renderizarTudo();
+      return true;
+    }
+
+    function hoje() {
+      const d = new Date();
+      const ano = d.getFullYear();
+      const mes = String(d.getMonth() + 1).padStart(2, "0");
+      const dia = String(d.getDate()).padStart(2, "0");
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    function idNovo() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2);
+    }
+
+    function paraCentavos(valor) {
+      return Math.round(Number(valor) * 100);
+    }
+
+    function dinheiro(centavos) {
+      return (centavos / 100).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
+
+    function escapar(valor) {
+      return String(valor).replace(/[&<>"']/g, caractere => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[caractere]);
+    }
+
+    function dataBonita(data) {
+      const partes = data.split("-");
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    function resumoHTML(itens) {
+      return `<div class="resumo">${
+        itens.map(item => `
+          <div class="numero">
+            <span>${escapar(item.nome)}</span>
+            <strong>${dinheiro(item.valor)}</strong>
+          </div>
+        `).join("")
+      }</div>`;
+    }
+
+    function totais(lancamentos) {
+      return lancamentos.reduce((total, item) => {
+        total[item.tipo] += item.valor;
+        return total;
+      }, { entrada: 0, saida: 0 });
+    }
+
+    function barrasHTML(itens, classe = "") {
+      if (!itens.length) {
+        return '<p class="pequeno">Nenhum dado para exibir.</p>';
+      }
+
+      const maior = Math.max(...itens.map(item => item.valor), 1);
+
+      return itens.map(item => {
+        const largura = Math.max(0, (item.valor / maior) * 100);
+
+        return `
+          <div class="barra-linha">
+            <div class="barra-cabecalho">
+              <span>${escapar(item.nome)}</span>
+              <strong>${dinheiro(item.valor)}</strong>
+            </div>
+            <div class="trilho">
+              <div class="barra ${classe}" style="width:${largura}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function mostrarAba(nome) {
+      document.querySelectorAll("main section").forEach(secao => {
+        secao.classList.toggle("ativo", secao.id === nome);
+      });
+
+      document.querySelectorAll("#navegacao button").forEach(botao => {
+        botao.classList.toggle("ativo", botao.dataset.aba === nome);
+      });
+    }
+
+    $("navegacao").addEventListener("click", evento => {
+      const botao = evento.target.closest("button[data-aba]");
+      if (botao) mostrarAba(botao.dataset.aba);
+    });
+
+    function renderizarCaixa() {
+      const data = $("dataCaixa").value;
+      const caixa = dados.caixas[data];
+      const itens = dados.lancamentos.filter(item => item.data === data);
+      const total = totais(itens);
+
+      $("formAbrir").hidden = Boolean(caixa);
+      $("formLancamento").hidden = !caixa || caixa.fechado;
+      $("formFechar").hidden = !caixa || caixa.fechado;
+      $("acoesCaixa").innerHTML = "";
+      $("mensagemCaixa").textContent = "";
+
+      if (!caixa) {
+        $("situacaoCaixa").innerHTML =
+          '<p class="aviso">Este caixa ainda não foi aberto.</p>';
+      } else {
+        const esperado = caixa.inicial + total.entrada - total.saida;
+
+        let html = `<p><strong>Situação:</strong> ${
+          caixa.fechado ? "Fechado" : "Aberto"
+        }</p>`;
+
+        html += resumoHTML([
+          { nome: "Abertura", valor: caixa.inicial },
+          { nome: "Entradas", valor: total.entrada },
+          { nome: "Saídas", valor: total.saida },
+          { nome: "Saldo esperado", valor: esperado }
+        ]);
+
+        if (caixa.fechado) {
+          html += resumoHTML([
+            { nome: "Saldo conferido", valor: caixa.conferido },
+            { nome: "Diferença", valor: caixa.conferido - esperado }
+          ]);
+
+          $("acoesCaixa").innerHTML = `
+            <div class="acoes">
+              <button type="button" id="reabrirCaixa" class="secundario">
+                Reabrir para corrigir
+              </button>
+            </div>
+          `;
+        }
+
+        $("situacaoCaixa").innerHTML = html;
+      }
+
+      $("listaLancamentos").innerHTML = itens.length
+        ? itens.map(item => `
+            <div class="item">
+              <div>
+                <strong>${escapar(item.descricao)}</strong>
+                <p class="pequeno">
+                  ${escapar(item.categoria)} ·
+                  ${item.tipo === "entrada" ? "Entrada" : "Saída"}
+                </p>
+                <strong>${dinheiro(item.valor)}</strong>
+              </div>
+              ${
+                caixa && !caixa.fechado
+                  ? `<button type="button" class="perigo"
+                       data-excluir-lancamento="${escapar(item.id)}">
+                       Excluir
+                     </button>`
+                  : ""
+              }
+            </div>
+          `).join("")
+        : '<p class="pequeno">Nenhum lançamento nesta data.</p>';
+    }
+
+    $("dataCaixa").addEventListener("change", renderizarCaixa);
+
+    $("formAbrir").addEventListener("submit", evento => {
+      evento.preventDefault();
+
+      const data = $("dataCaixa").value;
+      const inicial = paraCentavos($("saldoInicial").value);
+
+      if (!data || !Number.isSafeInteger(inicial) || inicial < 0) return;
+
+      if (dados.caixas[data]) {
+        $("mensagemCaixa").textContent = "Esse caixa já foi aberto.";
+        return;
+      }
+
+      if (alterar(() => {
+        dados.caixas[data] = { inicial, fechado: false };
+      })) {
+        $("formAbrir").reset();
+      }
+    });
+
+    $("formLancamento").addEventListener("submit", evento => {
+      evento.preventDefault();
+
+      const data = $("dataCaixa").value;
+      const caixa = dados.caixas[data];
+      const descricao = $("descricaoLancamento").value.trim();
+      const categoria = $("categoriaLancamento").value.trim();
+      const valor = paraCentavos($("valorLancamento").value);
+
+      if (!caixa || caixa.fechado || !descricao || !categoria ||
+          !Number.isSafeInteger(valor) || valor <= 0) return;
+
+      const item = {
+        id: idNovo(),
+        data,
+        tipo: $("tipoLancamento").value,
+        descricao,
+        categoria,
+        valor
+      };
+
+      if (alterar(() => dados.lancamentos.push(item))) {
+        $("formLancamento").reset();
+      }
+    });
+
+    $("formFechar").addEventListener("submit", evento => {
+      evento.preventDefault();
+
+      const data = $("dataCaixa").value;
+      const caixa = dados.caixas[data];
+      const conferido = paraCentavos($("saldoConferido").value);
+
+      if (!caixa || caixa.fechado ||
+          !Number.isSafeInteger(conferido) || conferido < 0) return;
+
+      if (!confirm("Confirma o fechamento deste caixa?")) return;
+
+      if (alterar(() => {
+        caixa.fechado = true;
+        caixa.conferido = conferido;
+      })) {
+        $("formFechar").reset();
+      }
+    });
+
+    $("acoesCaixa").addEventListener("click", evento => {
+      if (evento.target.id !== "reabrirCaixa") return;
+
+      const caixa = dados.caixas[$("dataCaixa").value];
+
+      if (!caixa || !confirm("Reabrir este caixa para correção?")) return;
+
+      alterar(() => {
+        caixa.fechado = false;
+        delete caixa.conferido;
+      });
+    });
+
+    $("listaLancamentos").addEventListener("click", evento => {
+      const botao = evento.target.closest("[data-excluir-lancamento]");
+      if (!botao) return;
+
+      const caixa = dados.caixas[$("dataCaixa").value];
+      if (!caixa || caixa.fechado) return;
+
+      if (!confirm("Excluir este lançamento?")) return;
+
+      alterar(() => {
+        dados.lancamentos = dados.lancamentos.filter(
+          item => item.id !== botao.dataset.excluirLancamento
+        );
+      });
+    });
+
+    function intervalo(data, periodo) {
+      const [ano, mes, dia] = data.split("-").map(Number);
+
+      if (periodo === "ano") {
+        return [`${ano}-01-01`, `${ano}-12-31`];
+      }
+
+      const prefixo = `${ano}-${String(mes).padStart(2, "0")}`;
+      const ultimoDia = new Date(ano, mes, 0).getDate();
+
+      if (periodo === "quinzena") {
+        return dia <= 15
+          ? [`${prefixo}-01`, `${prefixo}-15`]
+          : [`${prefixo}-16`, `${prefixo}-${ultimoDia}`];
+      }
+
+      return [`${prefixo}-01`, `${prefixo}-${ultimoDia}`];
+    }
+
+    function renderizarRelatorios() {
+      const data = $("dataRelatorio").value;
+      if (!data) return;
+
+      const [inicio, fim] = intervalo(data, $("periodoRelatorio").value);
+      const itens = dados.lancamentos.filter(
+        item => item.data >= inicio && item.data <= fim
+      );
+      const total = totais(itens);
+
+      $("intervaloRelatorio").textContent =
+        `De ${dataBonita(inicio)} até ${dataBonita(fim)}.`;
+
+      $("resumoRelatorio").innerHTML = resumoHTML([
+        { nome: "Entradas", valor: total.entrada },
+        { nome: "Saídas", valor: total.saida },
+        { nome: "Resultado", valor: total.entrada - total.saida }
+      ]);
+
+      $("graficoFluxo").innerHTML = barrasHTML([
+        { nome: "Entradas", valor: total.entrada },
+        { nome: "Saídas", valor: total.saida }
+      ]);
+
+      const categorias = {};
+
+      itens.filter(item => item.tipo === "saida").forEach(item => {
+        categorias[item.categoria] = (categorias[item.categoria] || 0) + item.valor;
+      });
+
+      const agrupadas = Object.entries(categorias)
+        .map(([nome, valor]) => ({ nome, valor }))
+        .sort((a, b) => b.valor - a.valor);
+
+      $("graficoCategorias").innerHTML = barrasHTML(agrupadas, "saida");
+    }
+
+    $("periodoRelatorio").addEventListener("change", renderizarRelatorios);
+    $("dataRelatorio").addEventListener("change", renderizarRelatorios);
+
+    function renderizarFixos() {
+      const mes = $("mesFixo").value;
+      const itens = dados.fixos.filter(item => item.mes === mes);
+      const total = itens.reduce((soma, item) => soma + item.valor, 0);
+
+      $("resumoFixos").innerHTML = resumoHTML([
+        { nome: "Total planejado no mês", valor: total }
+      ]);
+
+      $("listaFixos").innerHTML = itens.length
+        ? itens.map(item => `
+            <div class="item">
+              <div>
+                <strong>${escapar(item.nome)}</strong>
+                <p>${dinheiro(item.valor)}</p>
+              </div>
+              <button type="button" class="perigo"
+                data-excluir-fixo="${escapar(item.id)}">Excluir</button>
+            </div>
+          `).join("")
+        : '<p class="pequeno">Nenhum gasto cadastrado neste mês.</p>';
+
+      $("graficoFixos").innerHTML = barrasHTML(
+        itens.map(item => ({ nome: item.nome, valor: item.valor }))
+          .sort((a, b) => b.valor - a.valor),
+        "saida"
+      );
+    }
+
+    $("mesFixo").addEventListener("change", renderizarFixos);
+
+    $("formFixo").addEventListener("submit", evento => {
+      evento.preventDefault();
+
+      const mes = $("mesFixo").value;
+      const nome = $("nomeFixo").value.trim();
+      const valor = paraCentavos($("valorFixo").value);
+
+      if (!mes || !nome || !Number.isSafeInteger(valor) || valor <= 0) return;
+
+      if (alterar(() => {
+        dados.fixos.push({ id: idNovo(), mes, nome, valor });
+      })) {
+        $("nomeFixo").value = "";
+        $("valorFixo").value = "";
+      }
+    });
+
+    $("listaFixos").addEventListener("click", evento => {
+      const botao = evento.target.closest("[data-excluir-fixo]");
+      if (!botao || !confirm("Excluir este gasto?")) return;
+
+      alterar(() => {
+        dados.fixos = dados.fixos.filter(
+          item => item.id !== botao.dataset.excluirFixo
+        );
+      });
+    });
+
+    function renderizarAgenda() {
+      const mes = $("mesAgenda").value;
+      if (!mes) return;
+
+      const [ano, numeroMes] = mes.split("-").map(Number);
+      const primeiroDia = new Date(ano, numeroMes - 1, 1).getDay();
+      const quantidadeDias = new Date(ano, numeroMes, 0).getDate();
+      const selecionado = $("dataCompromisso").value;
+
+      const itens = dados.compromissos
+        .filter(item => item.data.startsWith(mes))
+        .sort((a, b) =>
+          (a.data + a.hora).localeCompare(b.data + b.hora)
+        );
+
+      let html = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
+        .map(dia => `<div class="dia-semana">${dia}</div>`)
+        .join("");
+
+      html += "<div></div>".repeat(primeiroDia);
+
+      for (let dia = 1; dia <= quantidadeDias; dia++) {
+        const data = `${mes}-${String(dia).padStart(2, "0")}`;
+        const temEvento = itens.some(item => item.data === data);
+
+        html += `
+          <button type="button"
+            class="${temEvento ? "tem-evento" : ""} ${
+              selecionado === data ? "selecionado" : ""
+            }"
+            data-dia="${data}"
+            aria-label="${dataBonita(data)}${
+              temEvento ? ", com compromisso" : ""
+            }">
+            ${dia}
+          </button>
+        `;
+      }
+
+      $("calendario").innerHTML = html;
+
+      $("listaCompromissos").innerHTML = itens.length
+        ? itens.map(item => `
+            <div class="item">
+              <div>
+                <strong>${escapar(item.titulo)}</strong>
+                <p class="pequeno">
+                  ${dataBonita(item.data)}
+                  ${item.hora ? " às " + escapar(item.hora) : ""}
+                </p>
+              </div>
+              <button type="button" class="perigo"
+                data-excluir-compromisso="${escapar(item.id)}">
+                Excluir
+              </button>
+            </div>
+          `).join("")
+        : '<p class="pequeno">Nenhum compromisso neste mês.</p>';
+    }
+
+    $("mesAgenda").addEventListener("change", renderizarAgenda);
+    $("dataCompromisso").addEventListener("change", () => {
+      const data = $("dataCompromisso").value;
+      if (data) $("mesAgenda").value = data.slice(0, 7);
+      renderizarAgenda();
+    });
+
+    $("calendario").addEventListener("click", evento => {
+      const botao = evento.target.closest("[data-dia]");
+      if (!botao) return;
+
+      $("dataCompromisso").value = botao.dataset.dia;
+      renderizarAgenda();
+    });
+
+    $("formCompromisso").addEventListener("submit", evento => {
+      evento.preventDefault();
+
+      const data = $("dataCompromisso").value;
+      const hora = $("horaCompromisso").value;
+      const titulo = $("tituloCompromisso").value.trim();
+
+      if (!data || !titulo) return;
+
+      if (alterar(() => {
+        dados.compromissos.push({ id: idNovo(), data, hora, titulo });
+        $("mesAgenda").value = data.slice(0, 7);
+      })) {
+        $("horaCompromisso").value = "";
+        $("tituloCompromisso").value = "";
+      }
+    });
+
+    $("listaCompromissos").addEventListener("click", evento => {
+      const botao = evento.target.closest("[data-excluir-compromisso]");
+      if (!botao || !confirm("Excluir este compromisso?")) return;
+
+      alterar(() => {
+        dados.compromissos = dados.compromissos.filter(
+          item => item.id !== botao.dataset.excluirCompromisso
+        );
+      });
+    });
+
+    $("exportar").addEventListener("click", () => {
+      const arquivo = new Blob([JSON.stringify(dados, null, 2)], {
+        type: "application/json"
+      });
+
+      const url = URL.createObjectURL(arquivo);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `backup-financeiro-${hoje()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    function backupValido(objeto) {
+      if (
+        !objeto ||
+        objeto.versao !== 1 ||
+        !objeto.caixas ||
+        typeof objeto.caixas !== "object" ||
+        Array.isArray(objeto.caixas) ||
+        !Array.isArray(objeto.lancamentos) ||
+        !Array.isArray(objeto.fixos) ||
+        !Array.isArray(objeto.compromissos)
+      ) return false;
+
+      const dataValida = valor =>
+        typeof valor === "string" && /^\d{4}-\d{2}-\d{2}$/.test(valor);
+
+      const valorValido = valor =>
+        Number.isSafeInteger(valor) && valor >= 0;
+
+      const caixasValidos = Object.entries(objeto.caixas).every(([data, caixa]) =>
+        dataValida(data) &&
+        caixa && typeof caixa === "object" &&
+        valorValido(caixa.inicial) &&
+        typeof caixa.fechado === "boolean" &&
+        (!caixa.fechado || valorValido(caixa.conferido))
+      );
+
+      const lancamentosValidos = objeto.lancamentos.every(item =>
+        item && typeof item.id === "string" &&
+        dataValida(item.data) &&
+        ["entrada", "saida"].includes(item.tipo) &&
+        typeof item.descricao === "string" &&
+        typeof item.categoria === "string" &&
+        valorValido(item.valor) && item.valor > 0 &&
+        Boolean(objeto.caixas[item.data])
+      );
+
+      const fixosValidos = objeto.fixos.every(item =>
+        item && typeof item.id === "string" &&
+        typeof item.mes === "string" && /^\d{4}-\d{2}$/.test(item.mes) &&
+        typeof item.nome === "string" &&
+        valorValido(item.valor) && item.valor > 0
+      );
+
+      const compromissosValidos = objeto.compromissos.every(item =>
+        item && typeof item.id === "string" &&
+        dataValida(item.data) &&
+        typeof item.hora === "string" &&
+        typeof item.titulo === "string"
+      );
+
+      return caixasValidos && lancamentosValidos &&
+        fixosValidos && compromissosValidos;
+    }
+
+    $("importar").addEventListener("click", async () => {
+      const arquivo = $("arquivoBackup").files[0];
+
+      if (!arquivo) {
+        $("mensagemDados").textContent = "Escolha um arquivo de backup.";
+        return;
+      }
+
+      try {
+        const texto = await arquivo.text();
+        const recebido = JSON.parse(texto);
+
+        if (!backupValido(recebido)) {
+          throw new Error("Formato de backup inválido.");
+        }
+
+        if (!confirm(
+          "Todos os dados atuais serão substituídos. Deseja continuar?"
+        )) return;
+
+        if (alterar(() => { dados = recebido; })) {
+          $("mensagemDados").textContent = "Backup restaurado com sucesso.";
+          $("arquivoBackup").value = "";
+        }
+      } catch (erro) {
+        $("mensagemDados").textContent =
+          "Não foi possível restaurar: o arquivo não é um backup válido.";
+      }
+    });
+
+    function renderizarTudo() {
+      renderizarCaixa();
+      renderizarRelatorios();
+      renderizarFixos();
+      renderizarAgenda();
+    }
+
+    const dataAtual = hoje();
+    $("dataCaixa").value = dataAtual;
+    $("dataRelatorio").value = dataAtual;
+    $("mesFixo").value = dataAtual.slice(0, 7);
+    $("mesAgenda").value = dataAtual.slice(0, 7);
+    $("dataCompromisso").value = dataAtual;
+
+    renderizarTudo();
+
+    if ("serviceWorker" in navigator &&
+        (location.protocol === "https:" || location.hostname === "localhost")) {
+      navigator.serviceWorker.register("./service-worker.js").catch(() => {
+        console.warn("Não foi possível ativar o funcionamento offline.");
+      });
+    }
+  </script>
+</body>
+</html>
